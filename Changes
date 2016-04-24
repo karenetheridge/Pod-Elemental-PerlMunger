@@ -1,6 +1,7 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+        - no longer encoding character string input into octets for PPI
 
 0.200005  2016-04-24 16:17:30+01:00 Europe/London
         - avoid double-decoding; new pod is already text

@@ -43,7 +43,6 @@ C<%doc>.
 
 use namespace::autoclean;
 
-use Encode ();
 use List::Util 1.33 qw(any max);
 use Params::Util qw(_INSTANCE);
 use PPI;
@@ -53,9 +52,7 @@ requires 'munge_perl_string';
 around munge_perl_string => sub {
   my ($orig, $self, $perl, $arg) = @_;
 
-  my $perl_utf8 = Encode::encode('utf-8', $perl, Encode::FB_CROAK);
-
-  my $ppi_document = PPI::Document->new(\$perl_utf8);
+  my $ppi_document = PPI::Document->new(\$perl);
   confess(PPI::Document->errstr) unless $ppi_document;
 
   my $last_code_elem;
@@ -161,25 +158,12 @@ around munge_perl_string => sub {
 
   $doc->{ppi}->prune($end_finder);
 
-  my $new_perl = Encode::decode(
-    'utf-8',
-    $doc->{ppi}->serialize,
-    Encode::FB_CROAK,
-  );
+  my $new_perl = $doc->{ppi}->serialize;
 
   s/\n\s*\z// for $new_perl, $new_pod;
 
-  my $new_end;
-  if (defined $end) {
-    $new_end = Encode::decode(
-      'utf-8',
-      $end,
-      Encode::FB_CROAK,
-    );
-  }
-
   return defined $end
-         ? "$new_perl\n\n$new_pod\n\n$new_end"
+         ? "$new_perl\n\n$new_pod\n\n$end"
          : "$new_perl\n\n__END__\n\n$new_pod\n";
 };
 
